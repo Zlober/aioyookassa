@@ -15,6 +15,7 @@ class Confirmation(BaseModel):
     locale: str | None = None
     return_url: str | None = None
     url: str | None = Field(None, alias='confirmation_url')
+    confirmation_token: str | None = None
 
 
 class PaymentAmount(BaseModel):
