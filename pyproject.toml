@@ -1,12 +1,11 @@
-[tool.poetry]
+[project]
 name = "aioyookassa"
-version = "0.1.7"
+version = "0.1.8"
 description = "Asynchronous wrapper to interact with yookassa.ru API"
-authors = ["Marple"]
-repository = "https://github.com/marple-git/aioyookassa"
-documentation = "https://aioyookassa.readthedocs.io/en/latest/"
-license = "MIT"
-readme = 'README.md'
+authors = [{ name = "Marple" }]
+license = { text = "MIT" }
+readme = "README.md"
+requires-python = ">=3.13"
 
 keywords = [
     "yookassa",
@@ -32,21 +31,29 @@ classifiers = [
     "Typing :: Typed",
 ]
 
+dependencies = [
+    "pydantic>=2.11.5",
+    "aiohttp>=3.8.1",
+]
 
-[tool.poetry.dependencies]
-python = "^3.13"
-pydantic = ">=2.11.5"
-aiohttp = "^3.8.1"
+[project.urls]
+Repository = "https://github.com/marple-git/aioyookassa"
+Documentation = "https://aioyookassa.readthedocs.io/en/latest/"
 
-[tool.poetry.dev-dependencies]
-pytest = "^9.0"
-pytest-asyncio = "^1.4"
-aioresponses = "^0.7"
+[dependency-groups]
+dev = [
+    "pytest>=9.0",
+    "pytest-asyncio>=1.4",
+    "aioresponses>=0.7",
+]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
 
+[tool.hatch.build.targets.wheel]
+packages = ["aioyookassa"]
+
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
