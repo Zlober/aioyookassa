@@ -2,6 +2,8 @@ import uuid
 from datetime import datetime
 from typing import Union, Optional, Any, List
 
+from aiohttp import ClientSession
+
 from aioyookassa.core.abc.client import BaseAPIClient
 from aioyookassa.core.methods import CreatePayment, GetPayments, GetPayment, CapturePayment, CancelPayment
 from aioyookassa.types import Confirmation, Payment, PaymentsList
@@ -12,8 +14,9 @@ from aioyookassa.types.payment import PaymentAmount, Receipt, Airline, Transfer,
 class YooKassa(BaseAPIClient):
     """YooKassa API Client"""
 
-    def __init__(self, api_key: str, shop_id: int):
-        super().__init__(api_key, shop_id)
+    def __init__(self, api_key: str, shop_id: int,
+                 http_session: Optional[ClientSession] = None):
+        super().__init__(api_key, shop_id, http_session=http_session)
 
     async def create_payment(self, amount: PaymentAmount,
                              description: Optional[str] = None,

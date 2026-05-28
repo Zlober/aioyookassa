@@ -13,9 +13,11 @@ class BaseAPIClient(abc.ABC):
     """
     BASE_URL = 'https://api.yookassa.ru/v3'
 
-    def __init__(self, api_key: str, shop_id: Union[int, str]):
+    def __init__(self, api_key: str, shop_id: Union[int, str],
+                 http_session: Optional[ClientSession] = None):
         self.api_key = api_key
         self.shop_id = str(shop_id)
+        self._http_session = http_session
 
     async def _send_request(self, method: Type[APIMethod],
                             json: Optional[dict] = None,
@@ -27,29 +29,43 @@ class BaseAPIClient(abc.ABC):
         :param params: Parameters
         :return: JSON
         """
-        async with ClientSession() as session:
-            params = self._delete_none(params or {})
-            json = self._delete_none(json or {})
-            request_url = self._get_request_url(method)
-            request_headers = {'Content-Type': 'application/json'}
+        params = self._delete_none(params or {})
+        json = self._delete_none(json or {})
+        request_url = self._get_request_url(method)
+        request_headers = {'Content-Type': 'application/json'}
+        request_headers.update(headers or {})
 
-            request_headers.update(headers or {})
-
-            response = await session.request(
-                method.http_method,
-                request_url,
-                json=json,
-                params=params,
-                headers=request_headers,
-                auth=BasicAuth(self.shop_id, self.api_key)
+        if self._http_session is not None:
+            return await self._do_request(
+                self._http_session, method, request_url, json, params, request_headers
             )
 
-            response_json = await response.json()
+        async with ClientSession() as session:
+            return await self._do_request(
+                session, method, request_url, json, params, request_headers
+            )
 
-            if response.status != 200:
-                APIError.detect(response_json['code'], response_json['description'])
+    async def _do_request(self, session: ClientSession,
+                          method: Type[APIMethod],
+                          request_url: str,
+                          json: dict,
+                          params: dict,
+                          headers: dict) -> dict:
+        response = await session.request(
+            method.http_method,
+            request_url,
+            json=json,
+            params=params,
+            headers=headers,
+            auth=BasicAuth(self.shop_id, self.api_key)
+        )
 
-            return response_json
+        response_json = await response.json()
+
+        if response.status != 200:
+            APIError.detect(response_json['code'], response_json['description'])
+
+        return response_json
 
     def _get_request_url(self, method: Type[APIMethod]) -> str:
         """
